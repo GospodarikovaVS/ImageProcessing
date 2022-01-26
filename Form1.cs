@@ -55,14 +55,14 @@ namespace ImageProcessing
             if (dialog.ShowDialog() == DialogResult.OK && dialog.CheckPathExists && dialog.CheckFileExists)
             {
                 Bitmap inputOriginalBitmap = new Bitmap(dialog.FileName);
-                /*if (inputOriginalBitmap.Width > 500)
+                if (inputOriginalBitmap.Width > 500)
                 {
                     inputOriginalBitmap = inputOriginalBitmap.Clone(new Rectangle(0, 0, 500, inputOriginalBitmap.Height), inputOriginalBitmap.PixelFormat);
                 }
                 if (inputOriginalBitmap.Height > 655)
                 {
                     inputOriginalBitmap = inputOriginalBitmap.Clone(new Rectangle(0, 0, inputOriginalBitmap.Width, 655), inputOriginalBitmap.PixelFormat);
-                }*/
+                }
                 InputImagePictureBox.Image = inputOriginalBitmap;
                 OutputImagePictureBox.Image = null;
                 KindOfProcessingComboBox.Show();
@@ -165,28 +165,6 @@ namespace ImageProcessing
             OutputImagePictureBox.Image = outputBitmap;
         }
 
-        private void startConvolutionImageWithMatrix()
-        {
-            Bitmap inputBitmap = (Bitmap)InputImagePictureBox.Image;
-            Bitmap outputBitmap = new Bitmap(inputBitmap.Width, inputBitmap.Height);
-            double u = 0, v = 0.5;
-            int height = InputImagePictureBox.Image.Height;
-            int width = InputImagePictureBox.Image.Width;
-            for (int h = 0; h < height; h++)
-            {
-                for (int w = 0; w < width; w++)
-                {
-                    Color origColor = inputBitmap.GetPixel(w, h);
-                    int averageBrightness = (origColor.R + origColor.G + origColor.B) / 3;
-                    int editBrightness = Convert.ToInt32(127 + 50 * Math.Cos(u * h + v * w));
-                    // Make processed image
-                    Color editColor = Color.FromArgb(editBrightness, editBrightness, editBrightness);
-                    outputBitmap.SetPixel(w, h, editColor);
-                }
-            }
-            OutputImagePictureBox.Image = outputBitmap;
-        }
-
         private void getPeriodicalPattern()
         {
             int height = 500;
@@ -209,7 +187,7 @@ namespace ImageProcessing
                 for (int w = 0; w < width; w++)
                 {
                     int finalBrightness = 0;
-                    finalBrightness = Convert.ToInt32((Math.Cos(u[0] * h + v[0] * w)+ Math.Cos(u[0] * h + v[1] * w)+ Math.Cos(u[1] * h + v[0] * w)+ Math.Cos(u[1] * h + v[1] * w)) * conversionAddition + conversionAddition * 2);
+                    finalBrightness = Convert.ToInt32((Math.Cos(u[0] * h + v[0] * w) + Math.Cos(u[0] * h + v[1] * w) + Math.Cos(u[1] * h + v[0] * w) + Math.Cos(u[1] * h + v[1] * w)) * conversionAddition + conversionAddition * 2);
                     finalBrightness = finalBrightness < 0 ? 0 : (finalBrightness > 255 ? 255 : finalBrightness);
                     Color finalColor = Color.FromArgb(finalBrightness, finalBrightness, finalBrightness);
                     outputBitmap.SetPixel(w, h, finalColor);
@@ -239,6 +217,92 @@ namespace ImageProcessing
         private void PeriodicalPatternButton_Click(object sender, EventArgs e)
         {
             getPeriodicalPattern();
+        }
+
+        private void startConvolutionImageWithMatrix()
+        {
+            Bitmap inputBitmap = (Bitmap)InputImagePictureBox.Image;
+            Bitmap outputBitmap = new Bitmap(inputBitmap.Width, inputBitmap.Height);
+            int height = InputImagePictureBox.Image.Height;
+            int width = InputImagePictureBox.Image.Width;
+
+            int convolutionMatrixSize = 3; //only an odd number
+            double[][] convolutionMatrix = new double[convolutionMatrixSize][];
+            convolutionMatrix[0] = new double[convolutionMatrixSize];
+            convolutionMatrix[1] = new double[convolutionMatrixSize];
+            convolutionMatrix[2] = new double[convolutionMatrixSize];
+            //convolutionMatrix[3] = new double[convolutionMatrixSize];
+            //convolutionMatrix[4] = new double[convolutionMatrixSize];
+
+            ////Starting matrix without matrix fliping
+
+            //convolutionMatrix[0][0] = 1; convolutionMatrix[0][1] = 1; convolutionMatrix[0][2] = 1; convolutionMatrix[0][3] = 1; convolutionMatrix[0][4] = 1;
+            //convolutionMatrix[1][0] = 1; convolutionMatrix[1][1] = 1; convolutionMatrix[1][2] = 1; convolutionMatrix[1][3] = 1; convolutionMatrix[1][4] = 1;
+            //convolutionMatrix[2][0] = 1; convolutionMatrix[2][1] = 1; convolutionMatrix[2][2] = 1; convolutionMatrix[2][3] = 1; convolutionMatrix[2][4] = 1;
+            //convolutionMatrix[3][0] = 1; convolutionMatrix[3][1] = 1; convolutionMatrix[3][2] = 1; convolutionMatrix[3][3] = 1; convolutionMatrix[3][4] = 1;
+            //convolutionMatrix[4][0] = 1; convolutionMatrix[4][1] = 1; convolutionMatrix[4][2] = 1; convolutionMatrix[4][3] = 1; convolutionMatrix[4][4] = 1;
+
+            //convolutionMatrix[0][0] = 1; convolutionMatrix[0][1] = 2; convolutionMatrix[0][2] = 3; convolutionMatrix[0][3] = 4; convolutionMatrix[0][4] = 5;
+            //convolutionMatrix[1][0] = 6; convolutionMatrix[1][1] = 7; convolutionMatrix[1][2] = 8; convolutionMatrix[1][3] = 9; convolutionMatrix[1][4] = 10;
+            //convolutionMatrix[2][0] = 11; convolutionMatrix[2][1] = 12; convolutionMatrix[2][2] = 13; convolutionMatrix[2][3] = 14; convolutionMatrix[2][4] = 15;
+            //convolutionMatrix[3][0] = 16; convolutionMatrix[3][1] = 17; convolutionMatrix[3][2] = 18; convolutionMatrix[3][3] = 19; convolutionMatrix[3][4] = 20;
+            //convolutionMatrix[4][0] = 21; convolutionMatrix[4][1] = 22; convolutionMatrix[4][2] = 23; convolutionMatrix[4][3] = 24; convolutionMatrix[4][4] = 25;
+
+            //convolutionMatrix[0][0] = 1; convolutionMatrix[0][1] = 2; convolutionMatrix[0][2] = 3; 
+            //convolutionMatrix[1][0] = 4; convolutionMatrix[1][1] = 5; convolutionMatrix[1][2] = 6; 
+            //convolutionMatrix[2][0] = 7; convolutionMatrix[2][1] = 8; convolutionMatrix[2][2] = 9;
+
+            convolutionMatrix[0][0] = -1; convolutionMatrix[0][1] = -1; convolutionMatrix[0][2] = -1;
+            convolutionMatrix[1][0] = -1; convolutionMatrix[1][1] = 9; convolutionMatrix[1][2] = -1;
+            convolutionMatrix[2][0] = -1; convolutionMatrix[2][1] = -1; convolutionMatrix[2][2] = -1;
+
+            int convolutionOffset = 1 + convolutionMatrixSize / 2; //center of convolution matrix: convolutionMatrix[convolutionOffset][convolutionOffset]
+            int convolutionMatrixHalf = convolutionOffset - 1;
+
+            //Matrix flip and normalization
+            double matrixSum = convolutionMatrix[convolutionMatrixHalf][convolutionMatrixHalf];
+            for (int i = 0; i < convolutionOffset; i++)
+            {
+                for (int j = 0; j < convolutionMatrixSize; j++)
+                {
+                    if (j == convolutionMatrixHalf && i == convolutionMatrixHalf) break;
+                    double temp = convolutionMatrix[i][j];
+                    convolutionMatrix[i][j] = convolutionMatrix[convolutionMatrixSize - 1 - i][convolutionMatrixSize - 1 - j];
+                    matrixSum += temp + convolutionMatrix[i][j];
+                    convolutionMatrix[convolutionMatrixSize - 1 - i][convolutionMatrixSize - 1 - j] = temp;
+                }
+            }
+            for (int i = 0; i < convolutionMatrixSize; i++)
+            {
+                for (int j = 0; j < convolutionMatrixSize; j++)
+                {
+                    convolutionMatrix[i][j] = convolutionMatrix[i][j] / matrixSum;
+                }
+            }
+
+            for (int h = convolutionOffset; h < height - convolutionOffset; h++)
+            {
+                for (int w = convolutionOffset; w < width - convolutionOffset; w++)
+                {
+                    int newR = 0, newG = 0, newB = 0;
+                    for (int i = -convolutionMatrixHalf; i <= convolutionMatrixHalf; i++)
+                    {
+                        for (int j = -convolutionMatrixHalf; j <= convolutionMatrixHalf; j++)
+                        {
+                            newR += (int)(convolutionMatrix[convolutionMatrixHalf + i][convolutionMatrixHalf + j] * inputBitmap.GetPixel(w + j, h + i).R);
+                            newG += (int)(convolutionMatrix[convolutionMatrixHalf + i][convolutionMatrixHalf + j] * inputBitmap.GetPixel(w + j, h + i).G);
+                            newB += (int)(convolutionMatrix[convolutionMatrixHalf + i][convolutionMatrixHalf + j] * inputBitmap.GetPixel(w + j, h + i).B);
+                        }
+                    }
+
+                    newR = newR < 0 ? 0 : (newR > 255 ? 255 : newR);
+                    newG = newG < 0 ? 0 : (newG > 255 ? 255 : newG);
+                    newB = newB < 0 ? 0 : (newB > 255 ? 255 : newB);
+                    Color newColor = Color.FromArgb(newR, newG, newB);
+                    outputBitmap.SetPixel(w, h, newColor);
+                }
+            }
+            OutputImagePictureBox.Image = outputBitmap;
         }
     }
 }
