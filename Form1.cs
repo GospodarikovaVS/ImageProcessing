@@ -165,28 +165,6 @@ namespace ImageProcessing
             OutputImagePictureBox.Image = outputBitmap;
         }
 
-        private void startConvolutionImageWithMatrix()
-        {
-            Bitmap inputBitmap = (Bitmap)InputImagePictureBox.Image;
-            Bitmap outputBitmap = new Bitmap(inputBitmap.Width, inputBitmap.Height);
-            double u = 0, v = 0.5;
-            int height = InputImagePictureBox.Image.Height;
-            int width = InputImagePictureBox.Image.Width;
-            for (int h = 0; h < height; h++)
-            {
-                for (int w = 0; w < width; w++)
-                {
-                    Color origColor = inputBitmap.GetPixel(w, h);
-                    int averageBrightness = (origColor.R + origColor.G + origColor.B) / 3;
-                    int editBrightness = Convert.ToInt32(127 + 50 * Math.Cos(u * h + v * w));
-                    // Make processed image
-                    Color editColor = Color.FromArgb(editBrightness, editBrightness, editBrightness);
-                    outputBitmap.SetPixel(w, h, editColor);
-                }
-            }
-            OutputImagePictureBox.Image = outputBitmap;
-        }
-
         private void getPeriodicalPattern()
         {
             int height = 500;
@@ -239,6 +217,28 @@ namespace ImageProcessing
         private void PeriodicalPatternButton_Click(object sender, EventArgs e)
         {
             getPeriodicalPattern();
+        }
+
+        private void startConvolutionImageWithMatrix()
+        {
+            Bitmap inputBitmap = (Bitmap)InputImagePictureBox.Image;
+            Bitmap outputBitmap = new Bitmap(inputBitmap.Width, inputBitmap.Height);
+            double u = 0, v = 0.5;
+            int height = InputImagePictureBox.Image.Height;
+            int width = InputImagePictureBox.Image.Width;
+            for (int h = 0; h < height; h++)
+            {
+                for (int w = 0; w < width; w++)
+                {
+                    Color origColor = inputBitmap.GetPixel(w, h);
+                    int averageBrightness = (origColor.R + origColor.G + origColor.B) / 3;
+                    int editBrightness = Convert.ToInt32(127 + 50 * Math.Cos(u * h + v * w));
+                    // Make processed image
+                    Color editColor = Color.FromArgb(editBrightness, editBrightness, editBrightness);
+                    outputBitmap.SetPixel(w, h, editColor);
+                }
+            }
+            OutputImagePictureBox.Image = outputBitmap;
         }
     }
 }
