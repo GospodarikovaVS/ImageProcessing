@@ -33,6 +33,7 @@ namespace ImageProcessing
             KindOfProcessingImagesDictionary.Add("copy", "Copy");
             KindOfProcessingImagesDictionary.Add("gray", "Gray colors");
             KindOfProcessingImagesDictionary.Add("convolution", "Convolution");
+            KindOfProcessingImagesDictionary.Add("cross_correlation", "Сross-correlation");
 
             string[] values = KindOfProcessingImagesDictionary.Values.ToArray<string>();
             KindOfProcessingComboBox.Items.AddRange(values);
@@ -55,14 +56,14 @@ namespace ImageProcessing
             if (dialog.ShowDialog() == DialogResult.OK && dialog.CheckPathExists && dialog.CheckFileExists)
             {
                 Bitmap inputOriginalBitmap = new Bitmap(dialog.FileName);
-                /*if (inputOriginalBitmap.Width > 500)
+                if (inputOriginalBitmap.Width > 500)
                 {
                     inputOriginalBitmap = inputOriginalBitmap.Clone(new Rectangle(0, 0, 500, inputOriginalBitmap.Height), inputOriginalBitmap.PixelFormat);
                 }
                 if (inputOriginalBitmap.Height > 655)
                 {
                     inputOriginalBitmap = inputOriginalBitmap.Clone(new Rectangle(0, 0, inputOriginalBitmap.Width, 655), inputOriginalBitmap.PixelFormat);
-                }*/
+                }
                 InputImagePictureBox.Image = inputOriginalBitmap;
                 OutputImagePictureBox.Image = null;
                 KindOfProcessingComboBox.Show();
@@ -83,7 +84,7 @@ namespace ImageProcessing
         {
             try
             {
-                var dialog = new OpenFileDialog();
+                var dialog = new SaveFileDialog();
 
                 dialog.Title = "Save Image";
                 //dialog.Filter = "bmp files (*.bmp)|*.bmp";
@@ -121,6 +122,10 @@ namespace ImageProcessing
                 {
                     i = 2;
                 }
+                else if (KindOfProcessingImagesDictionary.TryGetValue("cross_correlation", out str) && operation == str)
+                {
+                    i = 3;
+                }
                 switch (i)
                 {
                     case 0:
@@ -131,6 +136,9 @@ namespace ImageProcessing
                         break;
                     case 2:
                         this.startConvolutionImageWithMatrix();
+                        break;
+                    case 3:
+                        this.startCrossCorrelation();
                         break;
                     default:
                         break;
@@ -187,7 +195,7 @@ namespace ImageProcessing
                 for (int w = 0; w < width; w++)
                 {
                     int finalBrightness = 0;
-                    finalBrightness = Convert.ToInt32((Math.Cos(u[0] * h + v[0] * w)+ Math.Cos(u[0] * h + v[1] * w)+ Math.Cos(u[1] * h + v[0] * w)+ Math.Cos(u[1] * h + v[1] * w)) * conversionAddition + conversionAddition * 2);
+                    finalBrightness = Convert.ToInt32((Math.Cos(u[0] * h + v[0] * w) + Math.Cos(u[0] * h + v[1] * w) + Math.Cos(u[1] * h + v[0] * w) + Math.Cos(u[1] * h + v[1] * w)) * conversionAddition + conversionAddition * 2);
                     finalBrightness = finalBrightness < 0 ? 0 : (finalBrightness > 255 ? 255 : finalBrightness);
                     Color finalColor = Color.FromArgb(finalBrightness, finalBrightness, finalBrightness);
                     outputBitmap.SetPixel(w, h, finalColor);
@@ -223,7 +231,93 @@ namespace ImageProcessing
         {
             Bitmap inputBitmap = (Bitmap)InputImagePictureBox.Image;
             Bitmap outputBitmap = new Bitmap(inputBitmap.Width, inputBitmap.Height);
-            double u = 0, v = 0.5;
+            int height = InputImagePictureBox.Image.Height;
+            int width = InputImagePictureBox.Image.Width;
+
+            int convolutionMatrixSize = 5; //only an odd number
+            double[][] convolutionMatrix = new double[convolutionMatrixSize][];
+            convolutionMatrix[0] = new double[convolutionMatrixSize];
+            convolutionMatrix[1] = new double[convolutionMatrixSize];
+            convolutionMatrix[2] = new double[convolutionMatrixSize];
+            convolutionMatrix[3] = new double[convolutionMatrixSize];
+            convolutionMatrix[4] = new double[convolutionMatrixSize];
+
+            ////Starting matrix without matrix fliping
+
+            //convolutionMatrix[0][0] = 1; convolutionMatrix[0][1] = 1; convolutionMatrix[0][2] = 1; convolutionMatrix[0][3] = 1; convolutionMatrix[0][4] = 1;
+            //convolutionMatrix[1][0] = 1; convolutionMatrix[1][1] = 1; convolutionMatrix[1][2] = 1; convolutionMatrix[1][3] = 1; convolutionMatrix[1][4] = 1;
+            //convolutionMatrix[2][0] = 1; convolutionMatrix[2][1] = 1; convolutionMatrix[2][2] = 1; convolutionMatrix[2][3] = 1; convolutionMatrix[2][4] = 1;
+            //convolutionMatrix[3][0] = 1; convolutionMatrix[3][1] = 1; convolutionMatrix[3][2] = 1; convolutionMatrix[3][3] = 1; convolutionMatrix[3][4] = 1;
+            //convolutionMatrix[4][0] = 1; convolutionMatrix[4][1] = 1; convolutionMatrix[4][2] = 1; convolutionMatrix[4][3] = 1; convolutionMatrix[4][4] = 1;
+
+            //convolutionMatrix[0][0] = 0; convolutionMatrix[0][1] = 0; convolutionMatrix[0][2] = 0; convolutionMatrix[0][3] = 0; convolutionMatrix[0][4] = 1;
+            //convolutionMatrix[1][0] = 0; convolutionMatrix[1][1] = 0; convolutionMatrix[1][2] = 0; convolutionMatrix[1][3] = 0; convolutionMatrix[1][4] = 2;
+            //convolutionMatrix[2][0] = 0; convolutionMatrix[2][1] = 0; convolutionMatrix[2][2] = 0; convolutionMatrix[2][3] = 0; convolutionMatrix[2][4] = 3;
+            //convolutionMatrix[3][0] = 0; convolutionMatrix[3][1] = 0; convolutionMatrix[3][2] = 0; convolutionMatrix[3][3] = 0; convolutionMatrix[3][4] = 2;
+            //convolutionMatrix[4][0] = 1; convolutionMatrix[4][1] = 2; convolutionMatrix[4][2] = 3; convolutionMatrix[4][3] = 2; convolutionMatrix[4][4] = 1;
+
+            convolutionMatrix[0][0] = -1; convolutionMatrix[0][1] = 0; convolutionMatrix[0][2] = 1;
+            convolutionMatrix[1][0] = -2; convolutionMatrix[1][1] = 0; convolutionMatrix[1][2] = 2;
+            convolutionMatrix[2][0] = -1; convolutionMatrix[2][1] = 0; convolutionMatrix[2][2] = 1;
+
+            //convolutionMatrix[0][0] = -1; convolutionMatrix[0][1] = -1; convolutionMatrix[0][2] = -1;
+            //convolutionMatrix[1][0] = -1; convolutionMatrix[1][1] = 9; convolutionMatrix[1][2] = -1;
+            //convolutionMatrix[2][0] = -1; convolutionMatrix[2][1] = -1; convolutionMatrix[2][2] = -1;
+
+            int convolutionOffset = 1 + convolutionMatrixSize / 2; //center of convolution matrix: convolutionMatrix[convolutionOffset][convolutionOffset]
+            int convolutionMatrixHalf = convolutionOffset - 1;
+
+            //Matrix flip and normalization
+            double matrixSum = convolutionMatrix[convolutionMatrixHalf][convolutionMatrixHalf];
+            for (int i = 0; i < convolutionOffset; i++)
+            {
+                for (int j = 0; j < convolutionMatrixSize; j++)
+                {
+                    if (j == convolutionMatrixHalf && i == convolutionMatrixHalf) break;
+                    double temp = convolutionMatrix[i][j];
+                    convolutionMatrix[i][j] = convolutionMatrix[convolutionMatrixSize - 1 - i][convolutionMatrixSize - 1 - j];
+                    matrixSum += temp + convolutionMatrix[i][j];
+                    convolutionMatrix[convolutionMatrixSize - 1 - i][convolutionMatrixSize - 1 - j] = temp;
+                }
+            }
+            if (matrixSum != 0)
+            {
+                for (int i = 0; i < convolutionMatrixSize; i++)
+                {
+                    for (int j = 0; j < convolutionMatrixSize; j++)
+                    {
+                        convolutionMatrix[i][j] = convolutionMatrix[i][j] / matrixSum;
+                    }
+                }
+            }
+            for (int h = convolutionOffset; h < height - convolutionOffset; h++)
+            {
+                for (int w = convolutionOffset; w < width - convolutionOffset; w++)
+                {
+                    int newR = 0, newG = 0, newB = 0;
+                    for (int i = -convolutionMatrixHalf; i <= convolutionMatrixHalf; i++)
+                    {
+                        for (int j = -convolutionMatrixHalf; j <= convolutionMatrixHalf; j++)
+                        {
+                            newR += (int)(convolutionMatrix[convolutionMatrixHalf + i][convolutionMatrixHalf + j] * inputBitmap.GetPixel(w + j, h + i).R);
+                            newG += (int)(convolutionMatrix[convolutionMatrixHalf + i][convolutionMatrixHalf + j] * inputBitmap.GetPixel(w + j, h + i).G);
+                            newB += (int)(convolutionMatrix[convolutionMatrixHalf + i][convolutionMatrixHalf + j] * inputBitmap.GetPixel(w + j, h + i).B);
+                        }
+                    }
+
+                    newR = newR < 0 ? 0 : (newR > 255 ? 255 : newR);
+                    newG = newG < 0 ? 0 : (newG > 255 ? 255 : newG);
+                    newB = newB < 0 ? 0 : (newB > 255 ? 255 : newB);
+                    Color newColor = Color.FromArgb(newR, newG, newB);
+                    outputBitmap.SetPixel(w, h, newColor);
+                }
+            }
+            OutputImagePictureBox.Image = outputBitmap;
+        }
+
+        private void makeInputPictureGrayAndInverted()
+        {
+            Bitmap inputBitmap = (Bitmap)InputImagePictureBox.Image;
             int height = InputImagePictureBox.Image.Height;
             int width = InputImagePictureBox.Image.Width;
             for (int h = 0; h < height; h++)
@@ -231,11 +325,94 @@ namespace ImageProcessing
                 for (int w = 0; w < width; w++)
                 {
                     Color origColor = inputBitmap.GetPixel(w, h);
-                    int averageBrightness = (origColor.R + origColor.G + origColor.B) / 3;
-                    int editBrightness = Convert.ToInt32(127 + 50 * Math.Cos(u * h + v * w));
-                    // Make processed image
-                    Color editColor = Color.FromArgb(editBrightness, editBrightness, editBrightness);
-                    outputBitmap.SetPixel(w, h, editColor);
+                    int averageBrightness = 255 - (origColor.R + origColor.G + origColor.B) / 3;
+                    inputBitmap.SetPixel(w, h, Color.FromArgb(averageBrightness, averageBrightness, averageBrightness));
+                }
+            }
+            InputImagePictureBox.Image = inputBitmap;
+
+            try
+            {
+                var dialog = new SaveFileDialog();
+
+                dialog.Title = "Save Image";
+                //dialog.Filter = "bmp files (*.bmp)|*.bmp";
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    InputImagePictureBox.Image.Save(dialog.FileName);
+
+                }
+                dialog.Dispose();
+
+            }
+            catch (Exception exp)
+            {
+                MessageBox.Show("Error with save result image. Error messge: " + exp.Message);
+            }
+        }
+
+        private void startCrossCorrelation()
+        {
+            //makeInputPictureGrayAndInverted();
+            Bitmap inputBitmap = (Bitmap)InputImagePictureBox.Image;
+            Bitmap outputBitmap = new Bitmap(inputBitmap.Width, inputBitmap.Height);
+            int height = InputImagePictureBox.Image.Height;
+            int width = InputImagePictureBox.Image.Width;
+            var dialog = new OpenFileDialog();
+
+            dialog.Title = "Open fragment for cross-correlation";
+            //dialog.Filter = "bmp files (*.bmp)|*.bmp";
+            Bitmap correlationFragmentBitmap = new Bitmap(51, 51);
+            bool uploaded = false;
+            while (!uploaded)
+            {
+                if (dialog.ShowDialog() == DialogResult.OK && dialog.CheckPathExists && dialog.CheckFileExists)
+                {
+                    correlationFragmentBitmap = new Bitmap(dialog.FileName);
+                    if (correlationFragmentBitmap.Width % 2 == 0)
+                    {
+                        correlationFragmentBitmap = correlationFragmentBitmap.Clone(new Rectangle(0, 0, correlationFragmentBitmap.Width - 1, correlationFragmentBitmap.Height), correlationFragmentBitmap.PixelFormat);
+                    }
+                    if (correlationFragmentBitmap.Height % 2 == 0)
+                    {
+                        correlationFragmentBitmap = correlationFragmentBitmap.Clone(new Rectangle(0, 0, correlationFragmentBitmap.Width, correlationFragmentBitmap.Height - 1), correlationFragmentBitmap.PixelFormat);
+                    }
+                    uploaded = true;
+                    dialog.Dispose();
+                }
+                else
+                {
+                    MessageBox.Show("Error with upload chosen file");
+                }
+            }
+
+            int widthFragment = correlationFragmentBitmap.Width;
+            int heightFragment = correlationFragmentBitmap.Height;
+            int fragmentHeightOffset = 1 + heightFragment / 2;
+            int fragmentWidthOffset = 1 + widthFragment / 2;
+            int fragmentHeightHalf = fragmentHeightOffset - 1;
+            int fragmentWidthHalf = fragmentWidthOffset - 1;
+
+
+            for (int h = fragmentHeightOffset; h < height - fragmentHeightOffset; h++)
+            {
+                for (int w = fragmentWidthOffset; w < width - fragmentWidthOffset; w++)
+                {
+                    int newR = 0;
+                    for (int i = -fragmentHeightHalf; i <= fragmentHeightHalf; i++)
+                    {
+                        for (int j = -fragmentWidthHalf; j <= fragmentWidthHalf; j++)
+                        {
+                            int temp = correlationFragmentBitmap.GetPixel(fragmentWidthHalf + j, fragmentHeightHalf + i).R > 127 ? 10 : 0;
+                            newR += (int)(temp * inputBitmap.GetPixel(w + j, h + i).R);
+                        }
+                    }
+                    newR = newR / (heightFragment * widthFragment);
+
+                    newR = newR < 0 ? 0 : (newR > 255 ? 255 : newR);
+                    Color newColor = Color.FromArgb(newR, newR, newR);
+                    outputBitmap.SetPixel(w, h, newColor);
                 }
             }
             OutputImagePictureBox.Image = outputBitmap;
