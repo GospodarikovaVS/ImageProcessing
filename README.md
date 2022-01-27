@@ -19,11 +19,20 @@ Result of this processing for matrix (-1 -1 -1|-1 9 -1|-1 -1 -1):
 Result of this processing for matrix (-1 -2 -1|0 0 0|1 2 1):
 ![Sobel operator](https://user-images.githubusercontent.com/34095981/151251449-ce441f35-6756-4f96-aa50-61796efc46d6.png)
 
-## 4. Cross-Corelation(v.3.0.0):
+## 4. Cross-Correlation(v.3.0.0):
 Load image with button located in left top angle. After this, choose in combobox "Cross-corelation" and click "Process image". Choose a fragment as a mask. Wait a few seconds and view result. Code of realisation on lines 355-418 of file "Form1.cs". 
 
-Result of this processing for this picture and fragment:
+Result of this processing for this picture and fragment in a first version:
 ![Fragment](https://user-images.githubusercontent.com/34095981/151265107-7818b885-35c2-4dfe-bc0c-59bf069fdefb.png)
 
-![Cross-corelation](https://user-images.githubusercontent.com/34095981/151265260-71236ee4-2fcd-4fd9-bdf6-469b584646eb.png)
+![Cross-corelation v.1](https://user-images.githubusercontent.com/34095981/151265260-71236ee4-2fcd-4fd9-bdf6-469b584646eb.png)
+
+Result of this processing for this picture and fragment in a last version:
+![Cross-corelation v.2](https://user-images.githubusercontent.com/34095981/151355396-fa791e20-c77c-4b26-910a-cf55b55a1d6a.png)
+
+![Cross-corelation-black v.2](https://user-images.githubusercontent.com/34095981/151355088-6a7efa3c-cb54-4dd4-ac2a-4444e7e9e274.png)
+
+![Cross-corelation-runes v.2](https://user-images.githubusercontent.com/34095981/151355209-b67d4ee3-41ca-4b42-8473-070e39f35ecc.png)
+
+
 
