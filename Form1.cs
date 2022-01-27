@@ -348,13 +348,12 @@ namespace ImageProcessing
             }
             catch (Exception exp)
             {
-                MessageBox.Show("Error with save result image. Error messge: " + exp.Message);
+                MessageBox.Show("Error with save result image. Error message: " + exp.Message);
             }
         }
 
         private void startCrossCorrelation()
         {
-            //makeInputPictureGrayAndInverted();
             Bitmap inputBitmap = (Bitmap)InputImagePictureBox.Image;
             Bitmap outputBitmap = new Bitmap(inputBitmap.Width, inputBitmap.Height);
             int height = InputImagePictureBox.Image.Height;
@@ -394,6 +393,28 @@ namespace ImageProcessing
             int fragmentHeightHalf = fragmentHeightOffset - 1;
             int fragmentWidthHalf = fragmentWidthOffset - 1;
 
+            for (int h = 0; h < heightFragment; h++)
+            {
+                for (int w = 0; w < widthFragment; w++)
+                {
+                    Color origColor = correlationFragmentBitmap.GetPixel(w, h);
+                    int averageBrightness = (origColor.R + origColor.G + origColor.B) / 3;
+                    averageBrightness = averageBrightness < 127 ? 10 : 0;
+                    correlationFragmentBitmap.SetPixel(w, h, Color.FromArgb(averageBrightness, averageBrightness, averageBrightness));
+                }
+            }
+
+            for (int h = 0; h < height; h++)
+            {
+                for (int w = 0; w < width; w++)
+                {
+                    Color origColor = inputBitmap.GetPixel(w, h);
+                    int averageBrightness = (origColor.R + origColor.G + origColor.B) / 3;
+                    averageBrightness = averageBrightness / 2;
+                    inputBitmap.SetPixel(w, h, Color.FromArgb(averageBrightness, averageBrightness, averageBrightness));
+                }
+            }
+            InputImagePictureBox.Image = inputBitmap;
 
             for (int h = fragmentHeightOffset; h < height - fragmentHeightOffset; h++)
             {
@@ -404,7 +425,7 @@ namespace ImageProcessing
                     {
                         for (int j = -fragmentWidthHalf; j <= fragmentWidthHalf; j++)
                         {
-                            int temp = correlationFragmentBitmap.GetPixel(fragmentWidthHalf + j, fragmentHeightHalf + i).R > 127 ? 10 : 0;
+                            int temp = correlationFragmentBitmap.GetPixel(fragmentWidthHalf + j, fragmentHeightHalf + i).R;
                             newR += (int)(temp * inputBitmap.GetPixel(w + j, h + i).R);
                         }
                     }
